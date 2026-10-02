@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Carga EV</title>
+    <style>
+        :root {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --input-bg: #0f172a;
+            --input-border: #334155;
+            --input-text: #f8fafc;
+            --btn-bg: #2563eb;
+            --btn-hover: #1d4ed8;
+            --result-bg: rgba(34, 197, 94, 0.1);
+            --result-border: #15803d;
+            --result-title: #4ade80;
+            --result-time: #22c55e;
+            --toggle-bg: #334155;
+            --toggle-text: #f8fafc;
+        }
+
+        [data-theme="light"] {
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --input-bg: #f8fafc;
+            --input-border: #cbd5e1;
+            --input-text: #0f172a;
+            --btn-bg: #2563eb;
+            --btn-hover: #1d4ed8;
+            --result-bg: #f0fdf4;
+            --result-border: #bbf7d0;
+            --result-title: #166534;
+            --result-time: #15803d;
+            --toggle-bg: #e2e8f0;
+            --toggle-text: #0f172a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            width: 100%;
+            max-width: 400px;
+            padding: 24px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .theme-toggle {
+            background: var(--toggle-bg);
+            color: var(--toggle-text);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            outline: none;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 1.05rem;
+            border: 1.5px solid var(--input-border);
+            border-radius: 12px;
+            outline: none;
+            background-color: var(--input-bg);
+            color: var(--input-text);
+        }
+
+        input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .row .form-group {
+            flex: 1;
+        }
+
+        button.btn-calc {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--btn-bg);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        button.btn-calc:active {
+            transform: scale(0.98);
+            background-color: var(--btn-hover);
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 16px;
+            background-color: var(--result-bg);
+            border: 1.5px solid var(--result-border);
+            border-radius: 12px;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--result-title);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .result-time {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--result-time);
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <h1>⚡Calculadora EV</h1>
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
+            <span id="themeIcon">🌙</span> <span id="themeText">Dark</span>
+        </button>
+    </div>
+    
+    <div class="row">
+        <div class="form-group">
+            <label for="power">Potencia (kW)</label>
+            <input type="number" id="power" value="2.4" step="0.1" min="0.1" inputmode="decimal">
+        </div>
+
+        <div class="form-group">
+            <label for="capacity">Batería (kWh)</label>
+            <input type="number" id="capacity" value="31.5" step="0.1" min="1" inputmode="decimal">
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="form-group">
+            <label for="current">% Actual</label>
+            <input type="number" id="current" autofocus placeholder="20" min="0" max="100" inputmode="numeric" enterkeyhint="next">
+        </div>
+
+        <div class="form-group">
+            <label for="target">% Objetivo</label>
+            <input type="number" id="target" value="80" min="0" max="100" inputmode="numeric" enterkeyhint="go">
+        </div>
+    </div>
+
+    <button class="btn-calc" id="btnCalculate" onclick="calculateTime()">Calcular tiempo</button>
+
+    <div class="result" id="resultBox">
+        <div class="result-title">Tiempo estimado</div>
+        <div class="result-time" id="resultTime">0h 0m</div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const currentInput = document.getElementById('current');
+        const targetInput = document.getElementById('target');
+
+        // Automatic initial focus
+        currentInput.focus();
+
+        // Keyboard flow: Enter on '% Actual' -> Move to '% Objetivo'
+        currentInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                targetInput.focus();
+                targetInput.select();
+            }
+        });
+
+        // Keyboard flow: Enter on '% Objetivo' -> Calculate & Hide soft keyboard
+        targetInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                calculateTime();
+                targetInput.blur();
+            }
+        });
+    });
+
+    function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-theme');
+        const themeIcon = document.getElementById('themeIcon');
+        const themeText = document.getElementById('themeText');
+
+        if (currentTheme === 'dark') {
+            html.setAttribute('data-theme', 'light');
+            themeIcon.textContent = '☀️';
+            themeText.textContent = 'Light';
+        } else {
+            html.setAttribute('data-theme', 'dark');
+            themeIcon.textContent = '🌙';
+            themeText.textContent = 'Dark';
+        }
+    }
+
+    function calculateTime() {
+        const power = parseFloat(document.getElementById('power').value);
+        const capacity = parseFloat(document.getElementById('capacity').value);
+        const currentVal = document.getElementById('current').value;
+        const targetVal = document.getElementById('target').value;
+
+        const current = parseFloat(currentVal);
+        const target = parseFloat(targetVal);
+
+        const resultBox = document.getElementById('resultBox');
+
+        if (isNaN(power) || isNaN(capacity) || isNaN(current) || isNaN(target)) {
+            alert('Por favor, ingresa un porcentaje actual y objetivo válidos.');
+            return;
+        }
+
+        if (current < 0 || target > 100) {
+            alert('Los porcentajes deben estar entre 0% y 100%.');
+            return;
+        }
+
+        if (current >= target) {
+            alert('El porcentaje objetivo debe ser mayor que el porcentaje actual.');
+            return;
+        }
+
+        // Exact constant charging formula
+        const percentageNeeded = target - current;
+        const energyNeeded = (percentageNeeded / 100) * capacity;
+        const totalHours = energyNeeded / power;
+
+        const hours = Math.floor(totalHours);
+        const minutes = Math.round((totalHours - hours) * 60);
+
+        const resultTime = document.getElementById('resultTime');
+
+        if (hours > 0) {
+            resultTime.textContent = `${hours}h ${minutes}m`;
+        } else {
+            resultTime.textContent = `${minutes}m`;
+        }
+
+        resultBox.style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
